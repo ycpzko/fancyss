@@ -1,0 +1,238 @@
+{
+  "log": {
+    "loglevel": "warning",
+    "access": "",
+    "error": ""
+  },
+  "inbounds": [
+    {
+      "port": 12345,
+      "tag": "transparent",
+      "protocol": "dokodemo-door",
+      "settings": {
+        "network": "tcp,udp",
+        "followRedirect": true
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls"
+        ]
+      },
+      "streamSettings": {
+        "sockopt": {
+          "tproxy": "tproxy"
+        }
+      }
+    },
+    {
+      "port": ,
+      "tag": "tg-in",
+      "protocol": "mtproto",
+      "settings": {
+        "users": [
+          {
+            "secret": "***"
+          }
+        ]
+      }
+    },
+    {
+      "port": ,
+      "tag": "homeproxy",
+      "protocol": "vmess",
+      "settings": {
+        "clients": [
+          {
+            "id": "**",
+            "alterId": 4
+          }
+        ]
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "proxy",
+      "protocol": "socks",
+      "settings": {
+        "servers": [
+          {
+            "address": "127.0.0.1",
+            "port": 9909
+          }
+        ]
+      }
+    },
+    {
+      "tag": "tg-out",
+      "protocol": "mtproto",
+      "settings": {},
+      "proxySettings": {
+        "tag": "proxy"
+      }
+    },
+    {
+      "tag": "predirect",
+      "protocol": "socks",
+      "settings": {
+        "servers": [
+          {
+            "address": "127.0.0.1",
+            "port": 9320
+          }
+        ]
+      }
+    },
+    {
+      "tag": "direct",
+      "protocol": "freedom"
+    },
+    {
+      "tag": "block",
+      "protocol": "blackhole",
+      "settings": {
+        "response": {
+          "type": "http"
+        }
+      }
+    },
+    {
+      "tag": "dns-out",
+      "protocol": "dns"
+    }
+  ],
+  "dns": {
+    "servers": [
+      "114.114.114.114",
+      "223.5.5.5",
+      "119.29.29.29",
+      {
+        "address": "127.0.0.1",
+        "port": 9983,
+        "domains": [
+          "ext:dlc.dat:category-vpnservices",
+          "ext:dlc.dat:category-anticensorship",
+          "ext:dlc.dat:category-porn",
+          "ext:dlc.dat:category-media",
+          "ext:dlc.dat:facebook",
+          "ext:dlc.dat:google",
+          "ext:dlc.dat:twitter",
+          "ext:dlc.dat:yandex",
+          "ext:dlc.dat:trustwave",
+          "ext:dlc.dat:addtoany",
+          "ext:dlc.dat:apkpure",
+          "ext:dlc.dat:dropbox",
+          "ext:dlc.dat:duckduckgo",
+          "ext:dlc.dat:gravatar",
+          "ext:dlc.dat:netlify",
+          "ext:dlc.dat:protonmail",
+          "ext:dlc.dat:sourceforge",
+          "ext:dlc.dat:startpage",
+          "ext:dlc.dat:tumblr",
+          "ext:dlc.dat:wordpress",
+          "ext:dlc.dat:line",
+          "ext:dlc.dat:signal",
+          "ext:dlc.dat:telegram",
+          "ext:dlc.dat:netflix",
+          "ext:dlc.dat:lihkg",
+          "ext:dlc.dat:pincong",
+          "ext:dlc.dat:quora",
+          "ext:dlc.dat:reddit",
+          "ext:dlc.dat:archive",
+          "ext:dlc.dat:wikimedia"
+        ]
+      }
+    ]
+  },
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "type": "field",
+        "inboundTag": [
+          "transparent",
+          "homeproxy"
+        ],
+        "port": "53",
+        "network": "udp",
+        "outboundTag": "dns-out"
+      },
+      {
+        "type": "field",
+        "inboundTag": [
+          "transparent",
+          "homeproxy"
+        ],
+        "port": "123",
+        "network": "udp",
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "inboundTag": [
+          "transparent",
+          "homeproxy"
+        ],
+        "network": "udp",
+        "outboundTag": "block"
+      },
+      {
+        "type": "field",
+        "inboundTag": "tg-in",
+        "outboundTag": "tg-out"
+      },
+      {
+        "type": "field",
+        "ip": [
+          "192.168.0.0/16",
+          "127.0.0.0/24"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "ext:dlc.dat:category-ads-all",
+          "ensighten.com"
+        ],
+        "outboundTag": "block"
+
+},
+      {
+        "type": "field",
+        "ip": [
+          "114.114.114.114",
+          "223.5.5.5",
+          "119.29.29.29"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "network": "udp",
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "ip": [
+          "geoip:cn"
+        ],
+        "outboundTag": "predirect"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "ext:dlc.dat:geolocation-cn",
+          "ext:dlc.dat:apple",
+          "microsoft.com",
+          "windows.com",
+          "windowsupdate.com",
+          "bdurl.net"
+        ],
+        "outboundTag": "predirect"
+      }
+    ]
+  }
+}
